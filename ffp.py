@@ -264,9 +264,6 @@ class HyperHeuristic:
 
       ### In order to simulate this control system, we will create a ``ControlSystemSimulation`` which represent the fuzzy logic system
       self.ffp_inference = ctrl.ControlSystemSimulation(self.rules)
-      print("---------------------Fuzzy Hyper Heuristic Inputs----------------------")
-      print(self.features)
-      print(self.heuristics)
 
     else:
       print("=====================")
@@ -279,21 +276,41 @@ class HyperHeuristic:
   # Returns the next heuristic to use
   #   problem = The FFP instance being solved
   def nextHeuristic(self, problem):
-    print("=====================")
-    print("Critical error at HyperHeuristic.nextHeuristic.")
-    print("The method has not been overriden by a valid subclass.")
-    print("The system will halt.")
-    print("=====================")
-    exit(0)
+    index = -1
+    # Represents the features of the current state
+    state = []
+    for i in range(len(self.features)):
+      state.append(problem.getFeature(self.features[i]))
+    print("\t" + str(state))
+
+    # Provide feature inputs to the Fuzzy Hyper Heuristic
+    ## [0]: Edge_Density [1]: Burning Nodes [2]: Nodes in Danger [3]: Avg Degree 
+    self.ffp_inference.input['ED'] = state[0]
+    self.ffp_inference.input['BN'] = state[1]
+    self.ffp_inference.input['ND'] = state[2]
+    self.ffp_inference.input['AD'] = state[3]
+
+    ## Compute the output with the given values
+    self.ffp_inference.compute()
+
+    ## Result of the Fuzzy Logic System (value from 0 to 1)
+    heuristic_value = self.ffp_inference.output['fuzzyHH']
+    print("Output of the FHH:", heuristic_value)
+    ## Decide which heuristic to use based on threshold
+    if heuristic_value < 0.5:
+      heuristic = "LDEG"
+      index=0
+    else: 
+      heuristic = "GDEG" 
+      index=1
+    print("\t\t=> " + str(heuristic) + " (R" + str(index) + ")")
+    return heuristic
+
 
   # Returns the string representation of this hyper-heuristic 
   def __str__(self):
-    print("=====================")
-    print("Critical error at HyperHeuristic.__str__.")
-    print("The method has not been overriden by a valid subclass.")
-    print("The system will halt.")
-    print("=====================")
-    exit(0)
+    text = "Features:\n\t" + str(self.features) + "\nHeuristics:\n\t" + str(self.heuristics) + "\nRules:\n" + str(self.rules.rules.all_rules)
+    return text
 
 # A dummy hyper-heuristic for testing purposes.
 # The hyper-heuristic creates a set of randomly initialized rules.
@@ -365,10 +382,13 @@ print("GDEG = " + str(problem.solve("GDEG", 1, False)))
 # Solves the problem using a randomly generated dummy hyper-heuristic
 problem = FFP(fileName)
 seed = random.randint(0, 1000)
-print("seed: ", seed)
+#print("seed: ", seed)
 hh = DummyHyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER"], ["LDEG", "GDEG"], 2, seed)
-print(hh)
+#print(hh)
 print("Dummy HH = " + str(problem.solve(hh, 1, False)))
 
 # Fuzzy Hyper Heuristics Approach
+problem = FFP(fileName)
 ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"])
+#print(ffp_hh_obj)
+print("Fuzzy HH = " + str(problem.solve(ffp_hh_obj, 1, False)))
