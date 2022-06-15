@@ -1,5 +1,8 @@
 import random
 import math
+import numpy as np
+import skfuzzy as fuzz
+from skfuzzy import control as ctrl
 
 # Provides the methods to create and solve the firefighter problem
 class FFP:
@@ -191,6 +194,7 @@ class HyperHeuristic:
   def __init__(self, features, heuristics):
     if (features):
       self.features = features.copy()
+    
     else:
       print("=====================")
       print("Critical error at HyperHeuristic.__init__.")
@@ -200,6 +204,70 @@ class HyperHeuristic:
       exit(0)
     if (heuristics):
       self.heuristics = heuristics.copy()
+      #super().__init__(features, heuristics)
+
+      # Load the Fuzzy Model
+      ## Define the Consequent (The Heuristics)
+      self.fuzzyHH = ctrl.Consequent(np.arange(0, 1.1, 0.1), 'fuzzyHH')
+      self.fuzzyHH['LDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.3,0.2)
+      self.fuzzyHH['GDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.7,0.2)
+      ### You can change the defuzzification method 'centroid','bisector','mom','som','lom'
+      ### Where they mean: mean of maximum, min of maximum, max of maximum
+      self.fuzzyHH.defuzzify_method = 'centroid'
+      
+      ## Define the Antecedents
+      ## 4 Features included in the Fire figther problem
+      ### 1. Edge Density (Represented with two member functions)
+      self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
+      self.ED['EDL'] = fuzz.trimf(self.ED.universe, [0.0, 0.0, 1.0])
+      self.ED['EDH'] = fuzz.trimf(self.ED.universe, [0.0, 1.0, 1.0])
+
+      ### 2. Burning Nodes (Represented with two member functions)
+      self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
+      self.BN['BNL'] = fuzz.trimf(self.BN.universe, [0.0, 0.0, 1.0])
+      self.BN['BNH'] = fuzz.trimf(self.BN.universe, [0.0, 1.0, 1.0])
+
+      ### 3. Nodes in Danger (Represented with two member functions)
+      self.ND = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ND')
+      self.ND['NDL'] = fuzz.trimf(self.ND.universe, [0.0, 0.0, 1.0])
+      self.ND['NDH'] = fuzz.trimf(self.ND.universe, [0.0, 1.0, 1.0])
+
+      ### 4. Average Degree (Represented with two member functions)
+      self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
+      self.AD['ADL'] = fuzz.trimf(self.AD.universe, [0.0, 0.0, 1.0])
+      self.AD['ADH'] = fuzz.trimf(self.AD.universe, [0.0, 1.0, 1.0])
+
+      ## Define the Fuzzy Rules
+      ### 16 Fuzzy Rules defined for the 4 features (One for the LDGE and another one for the GDGE)
+      rule1  = ctrl.Rule(self.ED['EDL'] & self.BN['BNL'] & self.ND['NDL'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule2  = ctrl.Rule(self.ED['EDL'] & self.BN['BNL'] & self.ND['NDL'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule3  = ctrl.Rule(self.ED['EDL'] & self.BN['BNL'] & self.ND['NDH'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule4  = ctrl.Rule(self.ED['EDL'] & self.BN['BNL'] & self.ND['NDH'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule5  = ctrl.Rule(self.ED['EDL'] & self.BN['BNH'] & self.ND['NDL'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule6  = ctrl.Rule(self.ED['EDL'] & self.BN['BNH'] & self.ND['NDL'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule7  = ctrl.Rule(self.ED['EDL'] & self.BN['BNH'] & self.ND['NDH'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule8  = ctrl.Rule(self.ED['EDL'] & self.BN['BNH'] & self.ND['NDH'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule9  = ctrl.Rule(self.ED['EDH'] & self.BN['BNL'] & self.ND['NDL'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule10 = ctrl.Rule(self.ED['EDH'] & self.BN['BNL'] & self.ND['NDL'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule11 = ctrl.Rule(self.ED['EDH'] & self.BN['BNL'] & self.ND['NDH'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule12 = ctrl.Rule(self.ED['EDH'] & self.BN['BNL'] & self.ND['NDH'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule13 = ctrl.Rule(self.ED['EDH'] & self.BN['BNH'] & self.ND['NDL'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule14 = ctrl.Rule(self.ED['EDH'] & self.BN['BNH'] & self.ND['NDL'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      rule15 = ctrl.Rule(self.ED['EDH'] & self.BN['BNH'] & self.ND['NDH'] & self.AD['ADL'], self.fuzzyHH['LDEG'])
+      rule16 = ctrl.Rule(self.ED['EDH'] & self.BN['BNH'] & self.ND['NDH'] & self.AD['ADH'], self.fuzzyHH['GDEG'])
+      
+      ### Combine all the rules
+      self.rules = ctrl.ControlSystem([ rule1, rule2, rule3, rule4, 
+                                        rule5, rule6, rule7, rule8, 
+                                        rule9, rule10, rule11, rule12,
+                                        rule13,rule14, rule15, rule16])
+
+      ### In order to simulate this control system, we will create a ``ControlSystemSimulation`` which represent the fuzzy logic system
+      self.ffp_inference = ctrl.ControlSystemSimulation(self.rules)
+      print("---------------------Fuzzy Hyper Heuristic Inputs----------------------")
+      print(self.features)
+      print(self.heuristics)
+
     else:
       print("=====================")
       print("Critical error at HyperHeuristic.__init__.")
@@ -297,7 +365,10 @@ print("GDEG = " + str(problem.solve("GDEG", 1, False)))
 # Solves the problem using a randomly generated dummy hyper-heuristic
 problem = FFP(fileName)
 seed = random.randint(0, 1000)
-print(seed)
+print("seed: ", seed)
 hh = DummyHyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER"], ["LDEG", "GDEG"], 2, seed)
 print(hh)
 print("Dummy HH = " + str(problem.solve(hh, 1, False)))
+
+# Fuzzy Hyper Heuristics Approach
+ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"])
