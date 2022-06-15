@@ -1,4 +1,6 @@
+import pandas as pd
 import random
+import os
 import math
 import numpy as np
 import skfuzzy as fuzz
@@ -281,7 +283,7 @@ class HyperHeuristic:
     state = []
     for i in range(len(self.features)):
       state.append(problem.getFeature(self.features[i]))
-    print("\t" + str(state))
+    #print("\t" + str(state))
 
     # Provide feature inputs to the Fuzzy Hyper Heuristic
     ## [0]: Edge_Density [1]: Burning Nodes [2]: Nodes in Danger [3]: Avg Degree 
@@ -295,7 +297,7 @@ class HyperHeuristic:
 
     ## Result of the Fuzzy Logic System (value from 0 to 1)
     heuristic_value = self.ffp_inference.output['fuzzyHH']
-    print("Output of the FHH:", heuristic_value)
+    #print("Output of the FHH:", heuristic_value)
     ## Decide which heuristic to use based on threshold
     if heuristic_value < 0.5:
       heuristic = "LDEG"
@@ -303,7 +305,7 @@ class HyperHeuristic:
     else: 
       heuristic = "GDEG" 
       index=1
-    print("\t\t=> " + str(heuristic) + " (R" + str(index) + ")")
+    #print("\t\t=> " + str(heuristic) + " (R" + str(index) + ")")
     return heuristic
 
 
@@ -369,26 +371,34 @@ class DummyHyperHeuristic(HyperHeuristic):
 
 # Tests
 # =====================
+# Store the Heuristics and FHH Burning Nodes
+df = pd.DataFrame(columns=['LDEG','GDEG','Fuzzy_Hyper_Heuristic'])
 
-fileName = "instances/BBGRL/50_ep0.2_0_gilbert_1.in"
-# Solves the problem using heuristic LDEG and one firefighter
-problem = FFP(fileName)
-print("LDEG = " + str(problem.solve("LDEG", 1, False)))
+# Paths of the instances
+trainset_path = './instances/BBGRL/'
+testset_path = './instances/GBRL/'
 
-# Solves the problem using heuristic GDEG and one firefighter
-problem = FFP(fileName)
-print("GDEG = " + str(problem.solve("GDEG", 1, False)))
+# Retrieve the files from the path
+instances = os.listdir(trainset_path)
+# Test the heuristics and FHH for all the instances
+for instance in instances:
+  # Solves the problem using heuristic LDEG and one firefighter
+  problem = FFP(trainset_path+instance) # Path to a specific File
+  #print("LDEG = " + str(problem.solve("LDEG", 1, False)))
+  result_1 = problem.solve("LDEG", 1, False)
+  
+  # Solves the problem using heuristic GDEG and one firefighter
+  problem = FFP(trainset_path+instance) # Path to a specific File
+  #print("GDEG = " + str(problem.solve("GDEG", 1, False)))
+  result_2 = problem.solve("GDEG", 1, False)
 
-# Solves the problem using a randomly generated dummy hyper-heuristic
-problem = FFP(fileName)
-seed = random.randint(0, 1000)
-#print("seed: ", seed)
-hh = DummyHyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER"], ["LDEG", "GDEG"], 2, seed)
-#print(hh)
-print("Dummy HH = " + str(problem.solve(hh, 1, False)))
+  # Solves the problem using Fuzzy Hyper Heuristic and one firefighter
+  problem = FFP(trainset_path+instance)
+  ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"])
+  #print("Fuzzy HH = " + str(problem.solve(ffp_hh_obj, 1, False)))
+  result_3 = problem.solve(ffp_hh_obj, 1, False)
+  
+  #store the information in the dataframe 
+  df = df.append({'LDEG': result_1, 'GDEG': result_2, 'Fuzzy_Hyper_Heuristic': result_3}, ignore_index=True)
 
-# Fuzzy Hyper Heuristics Approach
-problem = FFP(fileName)
-ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"])
-#print(ffp_hh_obj)
-print("Fuzzy HH = " + str(problem.solve(ffp_hh_obj, 1, False)))
+df.to_csv('trainset_results.csv')
