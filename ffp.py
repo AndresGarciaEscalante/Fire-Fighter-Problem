@@ -213,8 +213,11 @@ class HyperHeuristic:
       # Load the Fuzzy Model
       ## Define the Consequent (The Heuristics)
       self.fuzzyHH = ctrl.Consequent(np.arange(0, 1.1, 0.1), 'fuzzyHH')
-      self.fuzzyHH['LDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.3,0.2)
-      self.fuzzyHH['GDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.7,0.2)
+      #self.fuzzyHH['LDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.3,0.2)
+      #self.fuzzyHH['GDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.7,0.2)
+      self.fuzzyHH['LDEG'] = fuzz.trimf(self.fuzzyHH.universe, [0.0, 0.0, 1.0])
+      self.fuzzyHH['GDEG'] = fuzz.trimf(self.fuzzyHH.universe, [0.0, 1.0, 1.0])
+
       ### You can change the defuzzification method 'centroid','bisector','mom','som','lom'
       ### Where they mean: mean of maximum, min of maximum, max of maximum
       self.fuzzyHH.defuzzify_method = 'centroid'
@@ -420,7 +423,7 @@ class DummyHyperHeuristic(HyperHeuristic):
 # Tests
 # =====================
 # Store the Heuristics and FHH Burning Nodes
-df = pd.DataFrame(columns=['LDEG','GDEG','Fuzzy_Hyper_Heuristic'])
+df = pd.DataFrame(columns=['LDEG','GDEG','Oracle','FHH'])
 
 # Paths of the instances
 trainset_path = './instances/BBGRL/'
@@ -447,6 +450,6 @@ for instance in instances:
   result_3 = problem.solve(ffp_hh_obj, 1, False)
   
   #store the information in the dataframe 
-  df = df.append({'LDEG': result_1, 'GDEG': result_2, 'Fuzzy_Hyper_Heuristic': result_3}, ignore_index=True)
+  df = df.append({'LDEG': result_1, 'GDEG': result_2,'Oracle': min(result_1,result_2), 'FHH': result_3}, ignore_index=True)
 
-df.to_csv('trainset_results.csv')
+df.to_csv('trainset_results_triangular_variation.csv')
