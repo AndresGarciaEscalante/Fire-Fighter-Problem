@@ -1,3 +1,4 @@
+from statistics import mode
 import pandas as pd
 import random
 import os
@@ -193,7 +194,8 @@ class HyperHeuristic:
   # Constructor
   #   features = A list with the names of the features to be used by this hyper-heuristic
   #   heuristics = A list with the names of the heuristics to be used by this hyper-heuristic
-  def __init__(self, features, heuristics):
+  #   model_selected = 0: Triangular Antecedents, 1: Trapezoidal Antecedents, 2: Gaussians Antecedents
+  def __init__(self, features, heuristics,model_selected):
     if (features):
       self.features = features.copy()
     
@@ -219,25 +221,71 @@ class HyperHeuristic:
       
       ## Define the Antecedents
       ## 4 Features included in the Fire figther problem
-      ### 1. Edge Density (Represented with two member functions)
-      self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
-      self.ED['EDL'] = fuzz.trimf(self.ED.universe, [0.0, 0.0, 1.0])
-      self.ED['EDH'] = fuzz.trimf(self.ED.universe, [0.0, 1.0, 1.0])
+      ## Triangular Antecedent Model
+      if model_selected == 0:
+        ### 1. Edge Density (Represented with two member functions)
+        self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
+        self.ED['EDL'] = fuzz.trimf(self.ED.universe, [0.0, 0.0, 1.0])
+        self.ED['EDH'] = fuzz.trimf(self.ED.universe, [0.0, 1.0, 1.0])
 
-      ### 2. Burning Nodes (Represented with two member functions)
-      self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
-      self.BN['BNL'] = fuzz.trimf(self.BN.universe, [0.0, 0.0, 1.0])
-      self.BN['BNH'] = fuzz.trimf(self.BN.universe, [0.0, 1.0, 1.0])
+        ### 2. Burning Nodes (Represented with two member functions)
+        self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
+        self.BN['BNL'] = fuzz.trimf(self.BN.universe, [0.0, 0.0, 1.0])
+        self.BN['BNH'] = fuzz.trimf(self.BN.universe, [0.0, 1.0, 1.0])
 
-      ### 3. Nodes in Danger (Represented with two member functions)
-      self.ND = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ND')
-      self.ND['NDL'] = fuzz.trimf(self.ND.universe, [0.0, 0.0, 1.0])
-      self.ND['NDH'] = fuzz.trimf(self.ND.universe, [0.0, 1.0, 1.0])
+        ### 3. Nodes in Danger (Represented with two member functions)
+        self.ND = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ND')
+        self.ND['NDL'] = fuzz.trimf(self.ND.universe, [0.0, 0.0, 1.0])
+        self.ND['NDH'] = fuzz.trimf(self.ND.universe, [0.0, 1.0, 1.0])
 
-      ### 4. Average Degree (Represented with two member functions)
-      self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
-      self.AD['ADL'] = fuzz.trimf(self.AD.universe, [0.0, 0.0, 1.0])
-      self.AD['ADH'] = fuzz.trimf(self.AD.universe, [0.0, 1.0, 1.0])
+        ### 4. Average Degree (Represented with two member functions)
+        self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
+        self.AD['ADL'] = fuzz.trimf(self.AD.universe, [0.0, 0.0, 1.0])
+        self.AD['ADH'] = fuzz.trimf(self.AD.universe, [0.0, 1.0, 1.0])
+
+      ## Trapezoidal Antecedent Model
+      elif model_selected == 1:
+        ### 1. Edge Density (Represented with two member functions)
+        self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
+        self.ED['EDL'] = fuzz.trapmf(self.ED.universe, [0, 0, 0.3, 1])
+        self.ED['EDH'] = fuzz.trapmf(self.ED.universe, [0, 0.7, 1, 1])
+
+        ### 2. Burning Nodes (Represented with two member functions)
+        self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
+        self.BN['BNL'] = fuzz.trapmf(self.BN.universe, [0, 0, 0.3, 1])
+        self.BN['BNH'] = fuzz.trapmf(self.BN.universe, [0, 0.7, 1, 1])
+
+        ### 3. Nodes in Danger (Represented with two member functions)
+        self.ND = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ND')
+        self.ND['NDL'] = fuzz.trapmf(self.ND.universe, [0, 0, 0.3, 1])
+        self.ND['NDH'] = fuzz.trapmf(self.ND.universe, [0, 0.7, 1, 1])
+
+        ### 4. Average Degree (Represented with two member functions)
+        self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
+        self.AD['ADL'] = fuzz.trapmf(self.AD.universe, [0, 0, 0.3, 1])
+        self.AD['ADH'] = fuzz.trapmf(self.AD.universe, [0, 0.7, 1, 1])
+      
+      ## Gaussian Antecedent Model
+      elif model_selected == 2:
+        ### 1. Edge Density (Represented with two member functions)
+        self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
+        self.ED['EDL'] = fuzz.gaussmf(self.ED.universe, 0.0,0.3) # mean, std
+        self.ED['EDH'] = fuzz.gaussmf(self.ED.universe, 1.0,0.3)
+
+        ### 2. Burning Nodes (Represented with two member functions)
+        self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
+        self.BN['BNL'] = fuzz.gaussmf(self.BN.universe, 0.0,0.3)
+        self.BN['BNH'] = fuzz.gaussmf(self.BN.universe, 1.0,0.3)
+
+        ### 3. Nodes in Danger (Represented with two member functions)
+        self.ND = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ND')
+        self.ND['NDL'] = fuzz.gaussmf(self.ND.universe, 0.0,0.3)
+        self.ND['NDH'] = fuzz.gaussmf(self.ND.universe, 1.0,0.3)
+
+        ### 4. Average Degree (Represented with two member functions)
+        self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
+        self.AD['ADL'] = fuzz.gaussmf(self.AD.universe, 0.0,0.3)
+        self.AD['ADH'] = fuzz.gaussmf(self.AD.universe, 1.0,0.3)
 
       ## Define the Fuzzy Rules
       ### 16 Fuzzy Rules defined for the 4 features (One for the LDGE and another one for the GDGE)
@@ -394,7 +442,7 @@ for instance in instances:
 
   # Solves the problem using Fuzzy Hyper Heuristic and one firefighter
   problem = FFP(trainset_path+instance)
-  ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"])
+  ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"], model_selected=0)
   #print("Fuzzy HH = " + str(problem.solve(ffp_hh_obj, 1, False)))
   result_3 = problem.solve(ffp_hh_obj, 1, False)
   
