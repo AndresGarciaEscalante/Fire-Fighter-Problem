@@ -213,10 +213,10 @@ class HyperHeuristic:
       # Load the Fuzzy Model
       ## Define the Consequent (The Heuristics)
       self.fuzzyHH = ctrl.Consequent(np.arange(0, 1.1, 0.1), 'fuzzyHH')
-      #self.fuzzyHH['LDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.3,0.2)
-      #self.fuzzyHH['GDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.7,0.2)
-      self.fuzzyHH['LDEG'] = fuzz.trimf(self.fuzzyHH.universe, [0.0, 0.0, 1.0])
-      self.fuzzyHH['GDEG'] = fuzz.trimf(self.fuzzyHH.universe, [0.0, 1.0, 1.0])
+      self.fuzzyHH['LDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.3,0.2)
+      self.fuzzyHH['GDEG'] = fuzz.gaussmf(self.fuzzyHH.universe, 0.7,0.2)
+      #self.fuzzyHH['LDEG'] = fuzz.trimf(self.fuzzyHH.universe, [0.0, 0.0, 1.0])
+      #self.fuzzyHH['GDEG'] = fuzz.trimf(self.fuzzyHH.universe, [0.0, 1.0, 1.0])
 
       ### You can change the defuzzification method 'centroid','bisector','mom','som','lom'
       ### Where they mean: mean of maximum, min of maximum, max of maximum
@@ -227,9 +227,9 @@ class HyperHeuristic:
       ## Triangular Antecedent Model
       if model_selected == 0:
         ### 1. Edge Density (Represented with two member functions)
-        self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
-        self.ED['EDL'] = fuzz.trimf(self.ED.universe, [0.0, 0.0, 1.0])
-        self.ED['EDH'] = fuzz.trimf(self.ED.universe, [0.0, 1.0, 1.0])
+        self.ED = ctrl.Antecedent(np.arange(0, 0.30, 0.01), 'ED')        
+        self.ED['EDL'] = fuzz.trimf(self.ED.universe, [0.0, 0.0, 0.10])
+        self.ED['EDH'] = fuzz.trimf(self.ED.universe, [0.0, 0.30, 0.30])
 
         ### 2. Burning Nodes (Represented with two member functions)
         self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
@@ -242,16 +242,16 @@ class HyperHeuristic:
         self.ND['NDH'] = fuzz.trimf(self.ND.universe, [0.0, 1.0, 1.0])
 
         ### 4. Average Degree (Represented with two member functions)
-        self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
-        self.AD['ADL'] = fuzz.trimf(self.AD.universe, [0.0, 0.0, 1.0])
-        self.AD['ADH'] = fuzz.trimf(self.AD.universe, [0.0, 1.0, 1.0])
+        self.AD = ctrl.Antecedent(np.arange(0, 0.30, 0.01), 'AD')
+        self.AD['ADL'] = fuzz.trimf(self.AD.universe, [0.0, 0.0, 0.10])
+        self.AD['ADH'] = fuzz.trimf(self.AD.universe, [0.0, 0.30, 0.30])
 
       ## Trapezoidal Antecedent Model
       elif model_selected == 1:
         ### 1. Edge Density (Represented with two member functions)
-        self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
-        self.ED['EDL'] = fuzz.trapmf(self.ED.universe, [0, 0, 0.3, 1])
-        self.ED['EDH'] = fuzz.trapmf(self.ED.universe, [0, 0.7, 1, 1])
+        self.ED = ctrl.Antecedent(np.arange(0, 0.30, 0.01), 'ED')
+        self.ED['EDL'] = fuzz.trapmf(self.ED.universe, [0, 0, 0.03, 0.07])
+        self.ED['EDH'] = fuzz.trapmf(self.ED.universe, [0, 0.05, 0.30, 0.30])
 
         ### 2. Burning Nodes (Represented with two member functions)
         self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
@@ -264,16 +264,16 @@ class HyperHeuristic:
         self.ND['NDH'] = fuzz.trapmf(self.ND.universe, [0, 0.7, 1, 1])
 
         ### 4. Average Degree (Represented with two member functions)
-        self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
-        self.AD['ADL'] = fuzz.trapmf(self.AD.universe, [0, 0, 0.3, 1])
-        self.AD['ADH'] = fuzz.trapmf(self.AD.universe, [0, 0.7, 1, 1])
+        self.AD = ctrl.Antecedent(np.arange(0, 0.30, 0.01), 'AD')
+        self.AD['ADL'] = fuzz.trapmf(self.AD.universe, [0, 0, 0.03, 0.07])
+        self.AD['ADH'] = fuzz.trapmf(self.AD.universe, [0, 0.05, 0.30, 0.30])
       
       ## Gaussian Antecedent Model
       elif model_selected == 2:
         ### 1. Edge Density (Represented with two member functions)
-        self.ED = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'ED')
-        self.ED['EDL'] = fuzz.gaussmf(self.ED.universe, 0.0,0.3) # mean, std
-        self.ED['EDH'] = fuzz.gaussmf(self.ED.universe, 1.0,0.3)
+        self.ED = ctrl.Antecedent(np.arange(0, 0.3, 0.01), 'ED')
+        self.ED['EDL'] = fuzz.gaussmf(self.ED.universe, 0.0,0.02) # mean, std
+        self.ED['EDH'] = fuzz.gaussmf(self.ED.universe, 0.12,0.1)
 
         ### 2. Burning Nodes (Represented with two member functions)
         self.BN = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'BN')
@@ -286,9 +286,9 @@ class HyperHeuristic:
         self.ND['NDH'] = fuzz.gaussmf(self.ND.universe, 1.0,0.3)
 
         ### 4. Average Degree (Represented with two member functions)
-        self.AD = ctrl.Antecedent(np.arange(0, 1.0, 0.01), 'AD')
-        self.AD['ADL'] = fuzz.gaussmf(self.AD.universe, 0.0,0.3)
-        self.AD['ADH'] = fuzz.gaussmf(self.AD.universe, 1.0,0.3)
+        self.AD = ctrl.Antecedent(np.arange(0, 0.3, 0.01), 'AD')
+        self.AD['ADL'] = fuzz.gaussmf(self.AD.universe, 0.0,0.04)
+        self.AD['ADH'] = fuzz.gaussmf(self.AD.universe, 0.12,0.1)
 
       ## Define the Fuzzy Rules
       ### 16 Fuzzy Rules defined for the 4 features (One for the LDGE and another one for the GDGE)
@@ -430,26 +430,26 @@ trainset_path = './instances/BBGRL/'
 testset_path = './instances/GBRL/'
 
 # Retrieve the files from the path
-instances = os.listdir(trainset_path)
+instances = os.listdir(testset_path)
 # Test the heuristics and FHH for all the instances
 for instance in instances:
   # Solves the problem using heuristic LDEG and one firefighter
-  problem = FFP(trainset_path+instance) # Path to a specific File
+  problem = FFP(testset_path+instance) # Path to a specific File
   #print("LDEG = " + str(problem.solve("LDEG", 1, False)))
   result_1 = problem.solve("LDEG", 1, False)
   
   # Solves the problem using heuristic GDEG and one firefighter
-  problem = FFP(trainset_path+instance) # Path to a specific File
+  problem = FFP(testset_path+instance) # Path to a specific File
   #print("GDEG = " + str(problem.solve("GDEG", 1, False)))
   result_2 = problem.solve("GDEG", 1, False)
 
   # Solves the problem using Fuzzy Hyper Heuristic and one firefighter
-  problem = FFP(trainset_path+instance)
-  ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"], model_selected=0)
+  problem = FFP(testset_path+instance)
+  ffp_hh_obj = HyperHeuristic(["EDGE_DENSITY", "BURNING_NODES", "NODES_IN_DANGER", "AVG_DEGREE"], ["LDEG", "GDEG"], model_selected=2)
   #print("Fuzzy HH = " + str(problem.solve(ffp_hh_obj, 1, False)))
   result_3 = problem.solve(ffp_hh_obj, 1, False)
   
   #store the information in the dataframe 
   df = df.append({'LDEG': result_1, 'GDEG': result_2,'Oracle': min(result_1,result_2), 'FHH': result_3}, ignore_index=True)
 
-df.to_csv('trainset_results_triangular_variation.csv')
+df.to_csv('testset_results_gaussian.csv')
